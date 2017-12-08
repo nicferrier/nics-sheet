@@ -13,6 +13,6 @@ table {
     margin: 4pt;
     height: 200px;
     width: 100%;
-    overflow: scroll;
+    overflow: auto;
     white-space: nowrap;
 }

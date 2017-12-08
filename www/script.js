@@ -60,13 +60,6 @@ function testCsvParse() {
               complex2);
 }
 
-function childEach(element, f) {
-  for (var i = 0; i < element.childElementCount; i++) {
-    let child = element.children[i];
-    f(child);
-  }
-}
-
 
 /* Actually a csv handler.
 
@@ -86,14 +79,126 @@ function addDOMThing(thing) {
   document.body.insertBefore(thing, document.body.firstElementChild);
 }
 
+
+function whichIndex(child) {
+  let p = child.parentNode;
+  let index = Array.prototype.indexOf.call(p.children, child);
+  return index;
+}
+
+function testColumnNamer() {
+  // need a better setup here
+  testAddTables();
+  let t = document.querySelector("table");
+  console.log("name?", columnNamer(whichIndex(t.children[5])));
+}
+
+function tableSourceFromArray(from) {
+  let p = new Proxy(from, {
+    get: function (target, property, receiver) {
+      // console.log("got called", property);
+      if (this.hasOwnProperty(property)) {
+        return this[property];
+      }
+      return target[property];
+    },
+  });
+  p.rowCount =  function () {
+    return from.length;
+  };
+  p.columnCount = function () {
+    return from[0].length;
+  };
+  return p;
+}
+
+function isATable(obj) {
+  return obj instanceof HTMLElement && obj.tagName == "TABLE";
+}
+
+function tableSourceFromTable(from) {
+  let proxyArray = new Array();
+  let extended = {
+    rowCount: function () {
+      return from.tBodies[0].childElementCount;
+    },
+    columnCount: function () {
+      return from.tBodies[0].children[0].children.length;
+    }
+  };
+  let p = new Proxy(proxyArray,{
+    get: function (target, property, receiver) {
+      // console.log("special get called property = ", property, extended);
+      if (extended.hasOwnProperty(property)) {
+        // console.log("we have this property", property);
+        return extended[property];
+      }
+      if (Number.isInteger(parseInt(property))) {
+        let row = from.tBodies[0].children[property];
+        // console.log("from table row is", row);
+        let rowArray = [];
+        Array.from(row.children).forEach(e => rowArray.push(e.textContent));
+        return rowArray;
+      }
+    }
+  });
+  console.log("from table at create - property?", p);
+  
+  return p;
+}
+
+class TableSource {
+  constructor(from) {
+    if (Array.isArray(from) && Array.isArray(from[0])) {
+      return tableSourceFromArray(from);
+    }
+    else if (isATable(from)) {
+      return tableSourceFromTable(from);
+    }
+    else if (typeof(from) == "string") {
+      let rows = from.split("\n");
+      let resultRows = rows.map(row => csvLineParse(row));;
+      return tableSourceFromArray(resultRows);
+    }
+  }
+}
+
+
+function columnNamer(number) {
+  let num = number;
+  let baseChar = "A".charCodeAt(0);
+  let letters  = "";
+  
+  do {
+    number--;
+    let ch = String.fromCharCode(baseChar + (number % 26));
+    letters = ch + letters;
+    number = (number / 26) >> 0; // quick `floor`
+  } 
+  while(number > 0);
+
+  // console.log("number, letters is", num, letters);
+  return letters;
+}
+
 function addTable(dataSource) {
-  let rowCount = dataSource.length;
-  let cols = (dataSource != null && rowCount > 0) ? dataSource[0].length : 0;
+  console.log("getting rowcount");
+  let rowCount = dataSource.rowCount();
+  let cols = dataSource.columnCount();
+
+  console.log("col0", dataSource[0], cols, rowCount);
   
   let t = document.createElement("table");
-  for (i in dataSource) {
-    let row = dataSource[i];
-    if (arrayEq(row, [""])) continue;
+  let headTr = t.appendChild(document.createElement("thead"))
+    .appendChild(document.createElement("tr"));
+  for (let i = 0; i < cols; i++) {
+    let col = headTr.appendChild(document.createElement("th"));
+    col.textContent = columnNamer(i + 1);
+  }
+
+  let tbody = t.appendChild(document.createElement("tbody"));
+  dataSource.forEach(row => {
+    if (arrayEq(row, [""])) return;
     // else
     let tr = document.createElement("tr");
     for (field of row) {
@@ -101,24 +206,44 @@ function addTable(dataSource) {
       td.textContent = field;
       tr.appendChild(td);
     }
-    t.appendChild(tr);
-  }
+    tbody.appendChild(tr);
+  });
   addDOMThing(t);
   return t;
 }
+
+function testTableSource() {
+  let t = new TableSource(
+    [["col1", "col2", "col3"],
+     ["1", "2", "3"]]
+  );
+  console.log("row count is", t.rowCount());
+  console.log("column count is", t.columnCount());
+  console.log("index[0] is", t[0]);
+  console.log("index[1] is", t[1]);
+  console.log("indexOf(index[0]) is", t.indexOf(t[0]));
+
+  addTable(t);
+
+  let t2 = new TableSource(document.querySelector("table"));
+  console.log("row count is", t2.rowCount());
+  console.log("column count is", t2.columnCount());
+  console.log("index 2[0] is", t2[0]);
+  console.log("index 2[1] is", t2[1]);
+  //console.log("indexOf(index[0]) is", t.indexOf(t[0]));
+}
+
 
 
 // maybe this could take either a header row or be told to use column 0, or even column 1
 function addTableHeader(tableSource) {
   console.log("tableheader source", tableSource);
   let header = tableSource.rows[0];
-  console.log("tableheader row[0]", header);
 
   let t = document.createElement("table");
   t.appendChild(document.createElement("tr"));
 
-  childEach(header, field => {
-    console.log("field", field, field.textContent);
+  Array.from(header.children).forEach(field => {
     let fieldHeader = document.createElement("th");
     t.children[0].appendChild(fieldHeader);
     fieldHeader.textContent = field.textContent;
@@ -128,7 +253,6 @@ function addTableHeader(tableSource) {
     if (rowIndex < 1) continue;
 
     let row = tableSource.rows[rowIndex];
-    console.log("row", row);
     let tr = document.createElement("tr");
     childEach(row, field => {
       let fieldTd = document.createElement("td");
@@ -156,9 +280,10 @@ document.addEventListener("DOMContentLoaded", e => {
 
   let button = document.querySelector(".entry form button[name='import!']");
   button.addEventListener("click", importDataHandler);
-
   
   // test stuff
+  window.testTableSource = testTableSource;
   window.testAddTables = testAddTables;
+  window.testColumnNamer = testColumnNamer;
   // window.testCsvParse - testCsvParse;
 });
