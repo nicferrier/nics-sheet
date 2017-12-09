@@ -162,16 +162,17 @@ function addTable(dataSource) {
   }
 
   let tbody = t.appendChild(document.createElement("tbody"));
-  dataSource.forEach((row, index) => {
+  let rowIndex = 0;
+  dataSource.forEach(row => {
     if (utils.arrayEq(row, [""])) return;
     // else
     let tr = document.createElement("tr");
-    tr.appendChild(document.createElement("th")).textContent = index + 1;
-    for (let field of row) {
+    tr.appendChild(document.createElement("th")).textContent = ++rowIndex;
+    row.forEach(field => {
       let td = document.createElement("td");
       td.textContent = field;
       tr.appendChild(td);
-    }
+    });
     tbody.appendChild(tr);
   });
   addDOMThing(t);
