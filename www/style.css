@@ -3,16 +3,38 @@ body {
 }
 
 .entry form textarea {
-    width: 500px;
+    width: 800px;
     height: 200px;
 }
 
 table {
+    table-layout: fixed;
     display: inline-block;
-    font-size: 6pt;
+    font-size: 10pt;
     margin: 4pt;
-    height: 200px;
+    min-height: 200px;
+    max-height: 500px;
     width: 100%;
     overflow: auto;
     white-space: nowrap;
+    border-collapse: collapse;
+}
+
+/* horizontal axis */
+table thead tr th {
+    text-align: center;
+    min-width: 40px;
+    border: solid 1px;
+    background-color: #DDDDDD; /* Silver from http://clrs.cc/ */
+}
+
+/* vertical axis */
+table tbody tr th {
+    min-width: 80px;
+    border: solid 1px;
+    background-color: #DDDDDD; /* Silver from http://clrs.cc/ */
+}
+
+table tbody tr td {
+    border: solid 1px;
 }

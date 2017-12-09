@@ -1,8 +1,12 @@
+
+
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const { document } = (new JSDOM(`
 <html>
     <head>
         <title>Sheets</title>
         <link rel="stylesheet" href="/style.css" type="text/css"/>
-        <script type="module" src="/script.js"></script>
     </head>
     <body>
         <div class="entry" id="enter">
@@ -23,3 +27,7 @@ Date, Type, Description, Value, Balance, Account Name, Account Number
         </div>
     </body>
 </html>
+`)).window;
+
+
+console.log(document.querySelector("div"));
