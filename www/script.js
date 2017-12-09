@@ -212,10 +212,16 @@ function testTableSource() {
 
 
 // maybe this could take either a header row or be told to use column 0, or even column 1
-function addTableHeader(dataSource) {
+function addTableHeader(dataSource) {  
   console.log("addTableHeader", dataSource);
+
+  /// All this is ripped off addtable - we need to genericize
   let rowCount = dataSource.rowCount();
   let cols = dataSource.columnCount();
+
+  // Make an empty row of the correct size
+  let emptyRow = new Array();
+  for (let i = 0; i < cols; i++) emptyRow.push("");
 
   let t = document.createElement("table");
   let headTr = t.appendChild(document.createElement("thead"))
@@ -227,11 +233,8 @@ function addTableHeader(dataSource) {
     }
   }
 
-  let emptyRow = new Array();
-  for (let i = 0; i < cols; i++) emptyRow.push("");
-
   let tbody = t.appendChild(document.createElement("tbody"));
-  let i = 1;
+  let rowIndex = 0;
   dataSource.forEach(row => {
     console.log("row", JSON.stringify(row));
     if (utils.arrayEq(row, emptyRow)) {
@@ -240,12 +243,15 @@ function addTableHeader(dataSource) {
     }
     // else
     let tr = document.createElement("tr");
-    tr.appendChild(document.createElement("th")).textContent = i++;
-    for (let field of row) {
+    tr.appendChild(document.createElement("th")).textContent = ++rowIndex;
+    row.forEach(field => {
       let td = document.createElement("td");
+      if (rowIndex == 1) {
+        td.classList.add("userHeader");
+      }
       td.textContent = field;
       tr.appendChild(td);
-    }
+    });
     tbody.appendChild(tr);
   });
   addDOMThing(t);

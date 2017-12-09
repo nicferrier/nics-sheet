@@ -38,3 +38,9 @@ table tbody tr th {
 table tbody tr td {
     border: solid 1px;
 }
+
+table tbody tr td.userHeader {
+    border: solid 1px;
+    background-color: #eeeeee;
+    font-weight: bolder;
+}
