@@ -2,7 +2,8 @@
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const { document } = (new JSDOM(`
+
+const dom = new JSDOM(`
 <html>
     <head>
         <title>Sheets</title>
@@ -27,7 +28,13 @@ Date, Type, Description, Value, Balance, Account Name
         </div>
     </body>
 </html>
-`)).window;
+`);
+const { document } = (dom).window;
 
+document.body.appendChild(document.createElement("table"))
+  .appendChild(document.createElement("tr"))
+  .appendChild(document.createElement("td")).textContent = "A CELL";
 
-console.log(document.querySelector("div"));
+console.log(dom.serialize());
+
+// test-dom.js ends here

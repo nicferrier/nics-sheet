@@ -17,6 +17,24 @@ That's a sort of joke. Sheets sounds like "shits" which is what
 spreadsheets are.
 
 
+## What's the problem with ordinary spreadsheet programs?
+
+I think the one standout thing is that they encourage a lack of
+discipline around data transformation.
+
+For example: you get a data file from somewhere, in a spreadsheet you
+mutate it until it does what you want. Take columns out, whole rows,
+add a header, add formulae, etc...
+
+If each one of these things was a separate step then you could retrace
+your steps in transforming the data and change the value of the data
+but not it's form.
+
+The spreadsheet might become safer as a program.
+
+I don't see any reason to lose any usability to do this.
+
+
 ## Why *Layers*?
 
 Because I think layers of tabular data, where each layer is a
@@ -31,8 +49,6 @@ A layer might add data from an HTTP API or change formatting.
 
 Each layer is separable from all the others. Individual layers could
 be combined into more layers.
-
-
 
 ## Working on this
 
