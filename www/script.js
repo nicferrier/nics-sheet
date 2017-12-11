@@ -1,16 +1,7 @@
 import utils from "./utils.js";
 import csv from "./csv.js";
 import tablesrc from "./TableSource.js";
-
-/* Table sources as an abstraction */
-
-function testColumnNamer() {
-  // need a better setup here
-  testAddTables();
-  let t = document.querySelector("table");
-  console.log("name?", columnNamer(whichIndex(t.children[5])));
-}
-
+import columns from "./column.js";
 
 /* Actually a csv handler.
 
@@ -28,28 +19,10 @@ function addDOMThing(thing) {
   document.body.insertBefore(thing, document.body.firstElementChild);
 }
 
-
 function whichIndex(child) {
   let p = child.parentNode;
   let index = Array.prototype.indexOf.call(p.children, child);
   return index;
-}
-
-function columnNamer(number) {
-  let num = number;
-  let baseChar = "A".charCodeAt(0);
-  let letters  = "";
-  
-  do {
-    number--;
-    let ch = String.fromCharCode(baseChar + (number % 26));
-    letters = ch + letters;
-    number = (number / 26) >> 0; // quick `floor`
-  } 
-  while(number > 0);
-
-  // console.log("number, letters is", num, letters);
-  return letters;
 }
 
 function addTable(dataSource) {
@@ -65,7 +38,7 @@ function addTable(dataSource) {
   for (let i = 0; i < cols + 1; i++) {
     let col = headTr.appendChild(document.createElement("th"));
     if (i > 0) {
-      col.textContent = columnNamer(i);
+      col.textContent = columns.columnNamer(i);
     }
   }
 
@@ -119,7 +92,6 @@ function testTableSource() {
 }
 
 
-
 // maybe this could take either a header row or be told to use column 0, or even column 1
 function addTableHeader(dataSource) {  
   console.log("addTableHeader", dataSource);
@@ -138,7 +110,7 @@ function addTableHeader(dataSource) {
   for (let i = 0; i < cols + 1; i++) {
     let col = headTr.appendChild(document.createElement("th"));
     if (i > 0) {
-      col.textContent = columnNamer(i);
+      col.textContent = columns.columnNamer(i);
     }
   }
 
@@ -178,7 +150,7 @@ function addTableFunction (dataSource) {
   for (let i = 0; i < cols + 1; i++) {
     let col = headTr.appendChild(document.createElement("th"));
     if (i > 0) {
-      col.textContent = columnNamer(i);
+      col.textContent = cols.columnNamer(i);
     }
   }
 
@@ -224,10 +196,7 @@ document.addEventListener("DOMContentLoaded", e => {
   let button = document.querySelector(".entry form button[name='import!']");
   button.addEventListener("click", importDataHandler);
 
-  window.columnNamer = columnNamer;
-  
   // test stuff
   window.testTableSource = testTableSource;
   window.testAddTables = testAddTables;
-  window.testColumnNamer = testColumnNamer;
 });
